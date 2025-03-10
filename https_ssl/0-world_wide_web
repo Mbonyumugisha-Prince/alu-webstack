@@ -1,28 +1,24 @@
 #!/usr/bin/env bash
 # A bash script that prints information about subdomains.
+
 function get_sub_info {
-    local domain=$1
-    local subdomain=$2
-    local full_domain="${subdomain}.${domain}"
-   
-    # Use dig to get the DNS record information
-    local dig_output=$(dig +noall +answer ${full_domain})
-    
-    # Extract record type and destination IP
-    local record_type=$(echo "$dig_output" | awk '{print $4}')
-    local destination=$(echo "$dig_output" | awk '{print $5}')
-    
-    echo "The subdomain ${subdomain} is a ${record_type} record and points to ${destination}"
+  local domain=$1
+  local subdomain=$2
+  local full_domain="${subdomain}.${domain}"
+  local record_info=$(dig +noall +answer ${full_domain} | awk '{print $4, $5}')
+  local record_type=$(echo $record_info | awk '{print $1}')
+  local record_ip=$(echo $record_info | awk '{print $2}')
+
+  echo "The subdomain ${subdomain} is a ${record_type} record and points to ${record_ip}"
 }
+
 domain=$1
 subdomain=$2
 
 if [[ -z "$subdomain" ]]; then
-    # Display info for specified subdomains in the required order
-    for sub in www lb-01 web-01 web-02; do
-        get_sub_info "$domain" "$sub"
-    done
+  for sub in www lb-01 web-01 web-02; do
+    get_sub_info $domain $sub
+  done
 else
-    # Display info for a specific subdomain
-    get_sub_info "$domain" "$subdomain"
+  get_sub_info $domain $subdomain
 fi
